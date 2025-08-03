@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini AI Assistant</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        /* Code highlighting styles */
+        {{ code_styles|safe }}
+        
+        /* Additional markdown styles */
+        .message-content pre {
+            background-color: #282c34;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin: 10px 0;
+        }
+        
+        .message-content code {
+            background-color: #282c34;
+            color: #abb2bf;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+        }
+        
+        .message-content pre code {
+            background-color: transparent;
+            padding: 0;
+        }
+        
+        .message-content blockquote {
+            border-left: 4px solid #007bff;
+            padding-left: 15px;
+            margin: 10px 0;
+            color: #666;
+        }
+        
+        .message-content table {
+            border-collapse: collapse;
+            margin: 15px 0;
+            width: 100%;
+        }
+        
+        .message-content th, .message-content td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        
+        .message-content th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        
+        .message-content ul, .message-content ol {
+            margin: 10px 0;
+            padding-left: 25px;
+        }
+        
+        .message-content h1, .message-content h2, .message-content h3 {
+            margin: 15px 0 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar for sessions -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <h3>Chat History</h3>
+                <button id="new-chat-btn" class="new-chat-btn">+ New Chat</button>
+            </div>
+            <div class="search-box">
+                <input type="text" id="search-input" placeholder="Search conversations..." />
+            </div>
+            <div class="sessions-list" id="sessions-list">
+                <!-- Sessions will be loaded here -->
+            </div>
+        </div>
+        
+        <!-- Main chat container -->
+        <div class="chat-container">
+            <div class="chat-header">
+                <button id="toggle-sidebar" class="icon-btn" title="Toggle Sidebar">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+                <h1>Gemini AI Assistant</h1>
+                <!-- <div class="header-controls">
+                    <button id="export-btn" class="icon-btn" title="Export Chat">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                    </button>
+                    <button id="markdown-help-btn" class="icon-btn" title="Markdown Help">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
+                    </button>
+                    <button id="clear-btn" class="clear-btn">Clear Chat</button>
+                </div> -->
+
+                <!-- Update the header-controls section in index.html -->
+                <div class="header-controls">
+                    <button id="theme-toggle" class="icon-btn" title="Toggle Theme">
+                        <svg class="sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <circle cx="12" cy="12" r="5"></circle>
+                            <line x1="12" y1="1" x2="12" y2="3"></line>
+                            <line x1="12" y1="21" x2="12" y2="23"></line>
+                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                            <line x1="1" y1="12" x2="3" y2="12"></line>
+                            <line x1="21" y1="12" x2="23" y2="12"></line>
+                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                        </svg>
+                        <svg class="moon-icon" style="display: none;" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                        </svg>
+                    </button>
+                    <button id="export-btn" class="icon-btn" title="Export Chat">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                    </button>
+                    <button id="markdown-help-btn" class="icon-btn" title="Markdown Help">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
+                    </button>
+                    <button id="clear-btn" class="clear-btn">Clear Chat</button>
+                </div>
+            </div>
+            
+            <div class="chat-messages" id="chat-messages">
+                <div class="message assistant-message">
+                    <div class="message-content">
+                        <p>Hello! I'm your AI assistant powered by Gemini. I support <strong>markdown formatting</strong>!</p>
+                        <p>Your conversations are automatically saved. You can:</p>
+                        <ul>
+                            <li>View chat history in the sidebar</li>
+                            <li>Search through past conversations</li>
+                            <li>Export chats as JSON or TXT</li>
+                            <li>Continue previous conversations</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chat-input-container">
+                <div class="input-wrapper">
+                    <textarea 
+                        id="user-input" 
+                        class="chat-input" 
+                        placeholder="Type your message here... (Markdown supported)"
+                        rows="1"
+                    ></textarea>
+                    <button id="send-btn" class="send-btn">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path d="M22 2L11 13M22 2L15 22L11 13L2 9L22 2Z" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="input-tips">
+                    <span>Tip: Use **bold**, *italic*, `code`, and more!</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Markdown Help Modal -->
+    <div id="markdown-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Markdown Formatting Guide</h2>
+            <div class="markdown-help">
+                <h3>Text Formatting</h3>
+                <table>
+                    <tr><td><code>**bold text**</code></td><td><strong>bold text</strong></td></tr>
+                    <tr><td><code>*italic text*</code></td><td><em>italic text</em></td></tr>
+                    <tr><td><code>`inline code`</code></td><td><code>inline code</code></td></tr>
+                    <tr><td><code>~~strikethrough~~</code></td><td><del>strikethrough</del></td></tr>
+                </table>
+                
+                <h3>Headers</h3>
+                <pre># Header 1
+## Header 2
+### Header 3</pre>
+                
+                <h3>Lists</h3>
+                <pre>- Unordered item
+- Another item
+  - Nested item
+
+1. Ordered item
+2. Another item</pre>
+                
+                <h3>Code Blocks</h3>
+                <pre>```python
+def hello():
+    print("Hello, World!")
+```</pre>
+                
+                <h3>Links & Images</h3>
+                <pre>[Link text](https://example.com)
+![Alt text](image-url.jpg)</pre>
+                
+                <h3>Tables</h3>
+                <pre>| Header 1 | Header 2 |
+|----------|----------|
+| Cell 1   | Cell 2   |</pre>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Export Modal -->
+    <div id="export-modal" class="modal">
+        <div class="modal-content small">
+            <span class="close" data-modal="export-modal">&times;</span>
+            <h2>Export Chat</h2>
+            <div class="export-options">
+                <button class="export-option" data-format="json">
+                    <span class="export-icon">📄</span>
+                    <span>Export as JSON</span>
+                </button>
+                <button class="export-option" data-format="txt">
+                    <span class="export-icon">📝</span>
+                    <span>Export as Text</span>
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
